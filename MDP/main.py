@@ -52,7 +52,7 @@ def example_driver():
     mdp = MDP(board=board_env,
               terminal_states=terminal_states_env,
               transition_function=transition_function_env,
-              gamma=1.0)
+              gamma=0.9)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print("@@@@@@ The board and rewards @@@@@@")
@@ -67,34 +67,37 @@ def example_driver():
          [0, 0, 0, 0],
          [0, 0, 0, 0]]
 
-    print("\nInitial utility:")
-    mdp.print_utility(U)
-    print("\nFinal utility:")
-    U_new = value_iteration(mdp, U)
-    mdp.print_utility(U_new)
+    # print("\nInitial utility:")
+    # mdp.print_utility(U)
+    # print("\nFinal utility:")
+    # U_new = value_iteration(mdp, U)
+    # mdp.print_utility(U_new)
+    U_new=[[0.65, 0.74, 0.87, 1],
+         [0.56, None, 0.57, -1],
+         [0.49, 0.43, 0.47, 0.27]]
     print("\nFinal policy:")
     policy = get_policy(mdp, U_new)
     mdp.print_policy(policy)
 
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-    print("@@@@@@@@@ Policy iteration @@@@@@@@")
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-
-    print("\nPolicy evaluation:")
-    U_eval = policy_evaluation(mdp, policy)
-    mdp.print_utility(U_eval)
-
-    policy = [['UP', 'UP', 'UP', 0],
-              ['UP', 'WALL', 'UP', 0],
-              ['UP', 'UP', 'UP', 'UP']]
-
-    print("\nInitial policy:")
-    mdp.print_policy(policy)
-    print("\nFinal policy:")
-    policy_new = policy_iteration(mdp, policy)
-    mdp.print_policy(policy)
-
-    print("Done!")
+    # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+    # print("@@@@@@@@@ Policy iteration @@@@@@@@")
+    # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+    #
+    # print("\nPolicy evaluation:")
+    # U_eval = policy_evaluation(mdp, policy)
+    # mdp.print_utility(U_eval)
+    #
+    # policy = [['UP', 'UP', 'UP', 0],
+    #           ['UP', 'WALL', 'UP', 0],
+    #           ['UP', 'UP', 'UP', 'UP']]
+    #
+    # print("\nInitial policy:")
+    # mdp.print_policy(policy)
+    # print("\nFinal policy:")
+    # policy_new = policy_iteration(mdp, policy)
+    # mdp.print_policy(policy_new)
+    #
+    # print("Done!")
 
 
 if __name__ == '__main__':
