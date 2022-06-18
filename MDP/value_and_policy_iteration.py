@@ -2,31 +2,21 @@ import pdb
 from copy import deepcopy
 import numpy as np
 
-def calcU(mdp,U,board,state_row,state_col,action):
-    if (state_row,state_col) in mdp.terminal_states:
-        return int(mdp.board[state_row][state_col])
-    val = board[state_row][state_col]
-    print(board[state_row][state_col],state_row,state_col,val,board,U)
-    # print(val)
-    #up,down,left,right
+def calcU(mdp,U,state_row,state_col,action):
+    print("-"*30 + f"{state_row, state_col, action}" + "-"*30)
     #Up
+    val = 0.0
     row,col = mdp.step((state_row, state_col), "UP")
-    # print(mdp.transition_function[action][0],U[row][col],row,col)
-    val+=mdp.gamma * U[row][col] * mdp.transition_function[action][0]
+    val+= U[row][col] * mdp.transition_function[action][0]
     #down
     row, col = mdp.step((state_row, state_col), "DOWN")
-    # print(mdp.transition_function[action][1], U[row][col], row, col)
-    val += mdp.gamma * U[row][col] * mdp.transition_function[action][1]
+    val += U[row][col] * mdp.transition_function[action][1]
     #left
-    row, col = mdp.step((state_row, state_col), "LEFT")
-    # print(mdp.transition_function[action][2], U[row][col], row, col)
-    val += mdp.gamma * U[row][col] * mdp.transition_function[action][2]
-    #right
     row, col = mdp.step((state_row, state_col), "RIGHT")
-    # print(mdp.transition_function[action][3], U[row][col], row, col)
-    val += mdp.gamma * U[row][col] * mdp.transition_function[action][3]
-    # print(val)
-    print(val)
+    val += U[row][col] * mdp.transition_function[action][2]
+    #right
+    row, col = mdp.step((state_row, state_col), "LEFT")
+    val += U[row][col] * mdp.transition_function[action][3]
     return val
 
 
@@ -44,9 +34,7 @@ def value_iteration(mdp, U_init, epsilon=10 ** (-3)):
     for i in range(0, np.array(U_tag).shape[0]):
         for j in range(0, np.array(U_tag).shape[1]):
             if U_tag[i][j] != "WALL":
-                U_tag[i][j] = int(U_tag[i][j])
-    board = deepcopy(U_tag)
-    print(board,U_tag)
+                U_tag[i][j] = float(U_tag[i][j])
     U = deepcopy(U_init)
     while True:
         delta = 0
@@ -54,26 +42,19 @@ def value_iteration(mdp, U_init, epsilon=10 ** (-3)):
             for state_col in range(0,np.array(mdp.board).shape[1]):
                 if mdp.board[state_row][state_col] == "WALL" :
                     continue
-                # print(f'tag: {U_tag}')
-                # print(f'reg: {U}')
-                # print(f'board: {board}')
-                U_tag[state_row][state_col] = max([calcU(mdp,U,board,state_row,state_col,s) for s in mdp.actions])
-                # print(f'tag: {U_tag}')
-                # print(f'reg: {U}')
-                # print(f'board: {board}')
-                # print(U[state_row][state_col],U_tag[state_row][state_col])
-                # print(delta,f'{abs((U_tag[state_row][state_col] - U[state_row][state_col]))}')
+                if (state_row, state_col) in mdp.terminal_states:
+                    U_tag[state_row][state_col] = float(mdp.board[state_row][state_col])
+                else:
+                    U_tag[state_row][state_col] = float(mdp.board[state_row][state_col])
+                    U_tag[state_row][state_col] += mdp.gamma* max([calcU(mdp,U,state_row,state_col,s) for s in mdp.actions])
                 delta = max(delta, abs(U_tag[state_row][state_col] - U[state_row][state_col]))
-                # print(f'delta {delta}')
-        board = deepcopy(U_tag)
         U = deepcopy(U_tag)
         if not mdp.gamma == 1:
-            if delta < epsilon*(1-mdp.gamma)/mdp.gamma:
-                break
+            if (delta < (epsilon*(1-mdp.gamma)/mdp.gamma)):
+                return U
         else:
             if delta == 0:
-                break
-    return U
+                return U
     # ========================
 
 def getValue(mdp,U,row,col,action,max_row,max_col):
