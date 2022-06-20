@@ -17,7 +17,7 @@ def calcU(mdp,U,state_row,state_col,action):
     #right
     row, col = mdp.step((state_row, state_col), "LEFT")
     val += U[row][col] * mdp.transition_function[action][3]
-    return val
+    return action,val
 
 
 
@@ -47,7 +47,7 @@ def value_iteration(mdp, U_init, epsilon=10 ** (-3)):
                 else:
                     U_tag[state_row][state_col] = float(mdp.board[state_row][state_col])
                     U_tag[state_row][state_col] += mdp.gamma* max([calcU(mdp,U,state_row,state_col,s) for s in mdp.actions])
-                delta = max(delta, abs(U_tag[state_row][state_col] - U[state_row][state_col]))
+                _,delta = max(delta, abs(U_tag[state_row][state_col] - U[state_row][state_col]))
         U = deepcopy(U_tag)
         if not mdp.gamma == 1:
             if (delta < (epsilon*(1-mdp.gamma)/mdp.gamma)):
@@ -98,7 +98,10 @@ def policy_evaluation(mdp, policy):
     #
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError
+    matrix = []
+    for state_row in range(0,np.array(mdp.board).shape[0]):
+        for state_col in range(0,np.array(mdp.board).shape[1]):
+            pass
     # ========================
 
 
@@ -110,5 +113,22 @@ def policy_iteration(mdp, policy_init):
     #
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError
+    policy = policy_init
+    while True:
+        unchanged = True
+        U = policy_evaluation(mdp,policy)
+        for state_row in range(0,np.array(mdp.board).shape[0]):
+            for state_col in range(0,np.array(mdp.board).shape[1]):
+                if mdp.board[state_row][state_col] == "WALL" :
+                    continue
+                if (state_row, state_col) in mdp.terminal_states:
+                    continue
+                else:
+                    action,_ = max([calcU(mdp,U,state_row,state_col,s) for s in mdp.actions])
+                    original_action = policy[state_row][state_col]
+                    if action!=original_action:
+                        policy[state_row][state_col] = action
+                        unchanged = False
+        if unchanged:
+            return policy
     # ========================
