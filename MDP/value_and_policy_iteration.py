@@ -6,8 +6,6 @@ def calcU(mdp,U,state_row,state_col,action):
     # print("-"*30 + f"{state_row, state_col, action}" + "-"*30)
     #Up
     val = 0.0
-    # for action in mdp.transition_function[action]:
-    #     print(action)
     row,col = mdp.step((state_row, state_col), "UP")
     val+= U[row][col] * mdp.transition_function[action][0]
     #down
@@ -102,14 +100,45 @@ def policy_evaluation(mdp, policy):
     # ====== YOUR CODE: ======
     columns = len(mdp.board[0])
     rows = len(mdp.board)
-    matrix = np.zeros((rows*columns), (rows*columns))
+    matrix = np.zeros((int(rows*columns), int(rows*columns)))
+    del_data = []
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
             if not mdp.board[row][col] == "WALL" and not (row, col) in mdp.terminal_states:
-                pass
+                curr_row, curr_col = mdp.step((row, col), "UP")
+                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][0]
+                curr_row, curr_col = mdp.step((row, col), "DOWN")
+                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][1]
+                curr_row, curr_col = mdp.step((row, col), "RIGHT")
+                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][2]
+                curr_row, curr_col = mdp.step((row, col), "LEFT")
+                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][3]
             elif mdp.board[row][col] == "WALL":
-                pass
+                del_data.append(row*columns+col)
+    for row in del_data:
+        matrix = np.delete(matrix, row, 0)
+        matrix = np.delete(matrix, row, 1)
 
+    list = []
+    for row in range(0,np.array(mdp.board).shape[0]):
+        for col in range(0,np.array(mdp.board).shape[1]):
+            if mdp.board[row][col] != 'WALL':
+                list.append(float(mdp.board[row][col]))
+    id_matrix = np.identity(len(list))  # identity matrix
+    inverted = np.linalg.inv(np.subtract(id_matrix, matrix.dot(mdp.gamma)))
+    product = inverted.dot(list)
+
+    walls = 0
+    U = np.zeros((rows, columns))
+    for row in range(0,np.array(mdp.board).shape[0]):
+        for col in range(0,np.array(mdp.board).shape[1]):
+            if mdp.board[row][col] == 'WALL':
+                U[row][col] = 0
+                walls += 1
+            else:
+                U[row][col] = product[row * columns + col - walls]
+
+    return U
     # ========================
 
 def policy_iteration(mdp, policy_init):
