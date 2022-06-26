@@ -3,7 +3,6 @@ from copy import deepcopy
 import numpy as np
 
 def calcU(mdp,U,state_row,state_col,action):
-    # print("-"*30 + f"{state_row, state_col, action}" + "-"*30)
     #Up
     val = 0.0
     row,col = mdp.step((state_row, state_col), "UP")
@@ -47,14 +46,15 @@ def value_iteration(mdp, U_init, epsilon=10 ** (-3)):
                 else:
                     U_tag[state_row][state_col] = float(mdp.board[state_row][state_col])
                     U_tag[state_row][state_col] += mdp.gamma* max([calcU(mdp,U,state_row,state_col,s) for s in mdp.actions])
-                delta = max(delta, round(float(abs(U_tag[state_row][state_col] - U[state_row][state_col])),4))
+                delta = max(delta, abs(U_tag[state_row][state_col] - U[state_row][state_col]))
         U = deepcopy(U_tag)
-        if not mdp.gamma == 1:
-            if (delta < (epsilon*(1-mdp.gamma)/mdp.gamma)):
-                return U
-        else:
+        if mdp.gamma == 1:
             if delta == 0:
                 return U
+        else:
+            if (delta < (epsilon*(1-mdp.gamma)/mdp.gamma)):
+                return U
+
     # ========================
 
 def getValue(mdp,U,row,col,action,max_row,max_col):
@@ -160,7 +160,7 @@ def policy_iteration(mdp, policy_init):
                 if (state_row, state_col) in mdp.terminal_states:
                     continue
                 else:
-                    orig_val, max_action= float("-inf"), None
+                    orig_val, max_action = float("-inf"), None
                     for action in mdp.actions:
                         val = calcU(mdp, U, state_row, state_col, action)
                         if val > orig_val:

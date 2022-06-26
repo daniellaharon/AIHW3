@@ -116,9 +116,10 @@ class ID3:
         for feature_idx in range(len(rows[0])):
             values = sorted(list(unique_vals(rows, feature_idx)))
             column = [row[feature_idx] for row in rows]
-            for value in values[1:]:
+            for value in range(len(values)-1):
             # for value in values:
-                question = Question(column,feature_idx,value)
+                val = (values[value]+values[value+1])/2
+                question = Question(column,feature_idx,val)
                 gain, true_rows, true_labels, false_rows, false_labels = self.partition(rows,labels,question,current_uncertainty)
                 if gain >= best_gain:
                     best_gain, best_question, best_true_rows, best_true_labels, best_false_rows, best_false_labels = gain, question, true_rows, true_labels, false_rows, false_labels
