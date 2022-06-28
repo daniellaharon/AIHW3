@@ -5,17 +5,12 @@ import numpy as np
 def calcU(mdp,U,state_row,state_col,action):
     #Up
     val = 0.0
-    row,col = mdp.step((state_row, state_col), "UP")
-    val+= U[row][col] * mdp.transition_function[action][0]
-    #down
-    row, col = mdp.step((state_row, state_col), "DOWN")
-    val += U[row][col] * mdp.transition_function[action][1]
-    #left
-    row, col = mdp.step((state_row, state_col), "RIGHT")
-    val += U[row][col] * mdp.transition_function[action][2]
-    #right
-    row, col = mdp.step((state_row, state_col), "LEFT")
-    val += U[row][col] * mdp.transition_function[action][3]
+    i=0
+    actions_list = list((mdp.actions).keys())
+    for item in actions_list:
+        row, col = mdp.step((state_row, state_col), item)
+        val += U[row][col] * mdp.transition_function[action][i]
+        i+=1
     return val
 
 
@@ -105,28 +100,26 @@ def policy_evaluation(mdp, policy):
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
             if not mdp.board[row][col] == "WALL" and not (row, col) in mdp.terminal_states:
-                curr_row, curr_col = mdp.step((row, col), "UP")
-                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][0]
-                curr_row, curr_col = mdp.step((row, col), "DOWN")
-                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][1]
-                curr_row, curr_col = mdp.step((row, col), "RIGHT")
-                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][2]
-                curr_row, curr_col = mdp.step((row, col), "LEFT")
-                matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][3]
+                i = 0
+                actions_list = list((mdp.actions).keys())
+                for item in actions_list:
+                    curr_row, curr_col = mdp.step((row, col), item)
+                    matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][i]
+                    i+=1
             elif mdp.board[row][col] == "WALL":
                 del_data.append(row*columns+col)
     for row in del_data:
         matrix = np.delete(matrix, row, 0)
         matrix = np.delete(matrix, row, 1)
 
-    list = []
+    n_list = []
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
             if mdp.board[row][col] != 'WALL':
-                list.append(float(mdp.board[row][col]))
-    id_matrix = np.identity(len(list))  # identity matrix
+                n_list.append(float(mdp.board[row][col]))
+    id_matrix = np.identity(len(n_list))  # identity matrix
     inverted = np.linalg.inv(np.subtract(id_matrix, matrix.dot(mdp.gamma)))
-    product = inverted.dot(list)
+    product = inverted.dot(n_list)
 
     walls = 0
     U = np.zeros((rows, columns))
