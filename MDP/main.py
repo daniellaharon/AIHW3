@@ -52,7 +52,7 @@ def example_driver():
     mdp = MDP(board=board_env,
               terminal_states=terminal_states_env,
               transition_function=transition_function_env,
-              gamma=0.9)
+              gamma=0.4)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print("@@@@@@ The board and rewards @@@@@@")
@@ -72,9 +72,6 @@ def example_driver():
     print("\nFinal utility:")
     U_new = value_iteration(mdp, U)
     mdp.print_utility(U_new)
-    # U_new=[[0.65, 0.74, 0.87, 1],
-    #      [0.56, None, 0.57, -1],
-    #      [0.49, 0.43, 0.47, 0.27]]
     print("\nFinal policy:")
     policy = get_policy(mdp, U_new)
     mdp.print_policy(policy)

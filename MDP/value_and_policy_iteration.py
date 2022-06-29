@@ -68,14 +68,8 @@ def get_policy(mdp, U):
             if U[row][col] =="WALL" or (row, col) in mdp.terminal_states:
                 continue
             max_action , max_u = None, float("-inf")
-            actions_list = list(mdp.actions.keys())
             for action in mdp.actions:
-                i = 0
-                u = 0
-                for item in mdp.transition_function[action]:
-                    ret_row, ret_col = mdp.step((row,col),actions_list[i])
-                    u += item*U[ret_row][ret_col]
-                    i += 1
+                u = calcU(mdp,U,row,col,action)
                 if u > max_u:
                     maxAction, max_u = action, u
             policy[row][col] = maxAction
