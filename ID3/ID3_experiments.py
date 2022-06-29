@@ -39,7 +39,16 @@ def find_best_pruning_m(train_dataset: np.array, m_choices, num_folds=5):
         #  or implement something else.
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError
+        kf = KFold(n_splits=num_folds, shuffle=True, random_state=209149772)
+        m_accuracies = []
+        split = create_train_validation_split(train_dataset, kf)
+        for train, valid in split:
+            x_train, y_train, x_test, y_test = get_dataset_split(train, valid, target_attribute)
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+            curr_accuracy = accuracy(y_test, y_pred)
+            m_accuracies.append(curr_accuracy)
+        accuracies.append(m_accuracies)
         # ========================
 
     best_m_idx = np.argmax([np.mean(acc) for acc in accuracies])
@@ -88,12 +97,12 @@ def cross_validation_experiment(plot_graph=True):
 
     best_m = None
     accuracies = []
-    m_choices = []
+    m_choices = [75, 100, 125, 175, 200, 250]
     num_folds = 5
 
     # ====== YOUR CODE: ======
     assert len(m_choices) >= 5, 'fill the m_choices list with  at least 5 different values for M.'
-    raise NotImplementedError
+    best_m, accuracies = find_best_pruning_m(train_dataset=train_dataset,m_choices = m_choices, num_folds = num_folds)
 
     # ========================
     accuracies_mean = np.array([np.mean(acc) * 100 for acc in accuracies])
@@ -127,7 +136,7 @@ def best_m_test(x_train, y_train, x_test, y_test, min_for_pruning):
     acc = None
 
     # ====== YOUR CODE: ======
-    id3 = ID3([0,],min_for_pruning=50)
+    id3 = ID3([0,],min_for_pruning=min_for_pruning)
     id3.fit(x_train,y_train)
     y_pred = id3.predict(x_test)
     acc = accuracy(y_test,y_pred)
@@ -163,6 +172,6 @@ if __name__ == '__main__':
         pruning experiment, run with the best parameter
         (*) To run the experiment uncomment below code and run it
     """
-    acc = best_m_test(*data_split, min_for_pruning=50)
+    acc = best_m_test(*data_split, min_for_pruning=best_m)
     assert acc > 0.95, 'you should get an accuracy of at least 95% for the pruned ID3 decision tree'
     print(f'Test Accuracy: {acc * 100:.2f}%' if formatted_print else acc)

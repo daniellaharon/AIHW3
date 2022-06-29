@@ -6,7 +6,7 @@ def calcU(mdp,U,state_row,state_col,action):
     #Up
     val = 0.0
     i=0
-    actions_list = list((mdp.actions).keys())
+    actions_list = list(mdp.actions.keys())
     for item in actions_list:
         row, col = mdp.step((state_row, state_col), item)
         val += U[row][col] * mdp.transition_function[action][i]
@@ -52,14 +52,6 @@ def value_iteration(mdp, U_init, epsilon=10 ** (-3)):
 
     # ========================
 
-def getValue(mdp,U,row,col,action,max_row,max_col):
-    next_state = tuple(map(sum, zip((row,col), mdp.actions[action])))
-    # collide with a wall
-    if next_state[0] < 0 or next_state[1] < 0 or next_state[0] >= max_row or next_state[1] >= max_col or \
-            U[next_state[0]][next_state[1]] == "WALL":
-        next_state = (row,col)
-    return next_state
-
 def get_policy(mdp, U):
     # TODO:
     # Given the mdp and the utility of each state - U (which satisfies the Belman equation)
@@ -73,18 +65,22 @@ def get_policy(mdp, U):
             policy[row][col] = -1
     for row in range(0, np.array(U).shape[0]):
         for col in range(0, np.array(U).shape[1]):
-            if U[row][col] =="WALL":
+            if U[row][col] =="WALL" or (row, col) in mdp.terminal_states:
                 continue
             max_action , max_u = None, float("-inf")
+            actions_list = list(mdp.actions.keys())
             for action in mdp.actions:
-                ret_row,ret_col = getValue(mdp,U,row,col,action,np.array(U).shape[0],np.array(U).shape[1])
-                u = U[ret_row][ret_col]
-                if u>max_u:
+                i = 0
+                u = 0
+                for item in mdp.transition_function[action]:
+                    ret_row, ret_col = mdp.step((row,col),actions_list[i])
+                    u += item*U[ret_row][ret_col]
+                    i += 1
+                if u > max_u:
                     maxAction, max_u = action, u
             policy[row][col] = maxAction
     return policy
     # ========================
-
 
 def policy_evaluation(mdp, policy):
     # TODO:
@@ -155,7 +151,7 @@ def policy_iteration(mdp, policy_init):
                 else:
                     orig_val, max_action = float("-inf"), None
                     for action in mdp.actions:
-                        val = calcU(mdp, U, state_row, state_col, action)
+                        val = float(mdp.board[state_row][state_col])+mdp.gamma*calcU(mdp, U, state_row, state_col, action)
                         if val > orig_val:
                             max_action = action
                             orig_val = val
