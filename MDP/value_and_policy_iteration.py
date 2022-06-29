@@ -69,7 +69,7 @@ def get_policy(mdp, U):
                 continue
             max_action , max_u = None, float("-inf")
             for action in mdp.actions:
-                u = calcU(mdp,U,row,col,action)
+                u = float(mdp.board[row][col]) + mdp.gamma * calcU(mdp,U,row,col,action)
                 if u > max_u:
                     maxAction, max_u = action, u
             policy[row][col] = maxAction
@@ -86,7 +86,6 @@ def policy_evaluation(mdp, policy):
     columns = len(mdp.board[0])
     rows = len(mdp.board)
     matrix = np.zeros((int(rows*columns), int(rows*columns)))
-    del_data = []
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
             if not mdp.board[row][col] == "WALL" and not (row, col) in mdp.terminal_states:
@@ -96,30 +95,26 @@ def policy_evaluation(mdp, policy):
                     curr_row, curr_col = mdp.step((row, col), item)
                     matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][i]
                     i+=1
-            elif mdp.board[row][col] == "WALL":
-                del_data.append(row*columns+col)
-    for row in del_data:
-        matrix = np.delete(matrix, row, 0)
-        matrix = np.delete(matrix, row, 1)
+
 
     n_list = []
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
             if mdp.board[row][col] != 'WALL':
                 n_list.append(float(mdp.board[row][col]))
-    id_matrix = np.identity(len(n_list))  # identity matrix
+            else:
+                n_list.append(0.0)
+    id_matrix = np.identity(len(n_list))
     inverted = np.linalg.inv(np.subtract(id_matrix, matrix.dot(mdp.gamma)))
     product = inverted.dot(n_list)
 
-    walls = 0
     U = np.zeros((rows, columns))
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
             if mdp.board[row][col] == 'WALL':
                 U[row][col] = 0
-                walls += 1
             else:
-                U[row][col] = product[row * columns + col - walls]
+                U[row][col] = product[row * columns + col]
 
     return U
     # ========================
