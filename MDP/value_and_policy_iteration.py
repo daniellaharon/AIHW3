@@ -69,7 +69,7 @@ def get_policy(mdp, U):
                 continue
             max_action , max_u = None, float("-inf")
             for action in mdp.actions:
-                u = float(mdp.board[row][col]) + mdp.gamma * calcU(mdp,U,row,col,action)
+                u = calcU(mdp,U,row,col,action)
                 if u > max_u:
                     maxAction, max_u = action, u
             policy[row][col] = maxAction
@@ -88,15 +88,17 @@ def policy_evaluation(mdp, policy):
     matrix = np.zeros((int(rows*columns), int(rows*columns)))
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
-            if not mdp.board[row][col] == "WALL" and not (row, col) in mdp.terminal_states:
+            if mdp.board[row][col] == "WALL":
+                continue
+            if(row, col) in mdp.terminal_states:
+                continue
+            else:
                 i = 0
-                actions_list = list((mdp.actions).keys())
+                actions_list = list(mdp.actions.keys())
                 for item in actions_list:
                     curr_row, curr_col = mdp.step((row, col), item)
-                    matrix[row * columns + col][curr_row * columns +curr_col] += mdp.transition_function[policy[row][col]][i]
+                    matrix[col + (row * columns)][curr_col + (curr_row * columns)] += mdp.transition_function[policy[row][col]][i]
                     i+=1
-
-
     n_list = []
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
@@ -104,18 +106,15 @@ def policy_evaluation(mdp, policy):
                 n_list.append(float(mdp.board[row][col]))
             else:
                 n_list.append(0.0)
-    id_matrix = np.identity(len(n_list))
-    inverted = np.linalg.inv(np.subtract(id_matrix, matrix.dot(mdp.gamma)))
-    product = inverted.dot(n_list)
+    inverted = np.linalg.inv(np.subtract(np.identity(len(n_list)), matrix.dot(mdp.gamma))).dot(n_list)
 
     U = np.zeros((rows, columns))
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
-            if mdp.board[row][col] == 'WALL':
-                U[row][col] = 0
+            if mdp.board[row][col] != 'WALL':
+                U[row][col] = inverted[col + (row * columns)]
             else:
-                U[row][col] = product[row * columns + col]
-
+                U[row][col] = 0.0
     return U
     # ========================
 
@@ -140,7 +139,7 @@ def policy_iteration(mdp, policy_init):
                 else:
                     orig_val, max_action = float("-inf"), None
                     for action in mdp.actions:
-                        val = float(mdp.board[state_row][state_col])+mdp.gamma*calcU(mdp, U, state_row, state_col, action)
+                        val = calcU(mdp, U, state_row, state_col, action)
                         if val > orig_val:
                             max_action = action
                             orig_val = val

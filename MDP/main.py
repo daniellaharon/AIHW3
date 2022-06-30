@@ -52,7 +52,7 @@ def example_driver():
     mdp = MDP(board=board_env,
               terminal_states=terminal_states_env,
               transition_function=transition_function_env,
-              gamma=0.67)
+              gamma=1.0)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print("@@@@@@ The board and rewards @@@@@@")
