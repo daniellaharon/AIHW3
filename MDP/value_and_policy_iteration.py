@@ -69,7 +69,7 @@ def get_policy(mdp, U):
                 continue
             max_action , max_u = None, float("-inf")
             for action in mdp.actions:
-                u = calcU(mdp,U,row,col,action)
+                u = float(mdp.board[row][col]) + mdp.gamma * calcU(mdp,U,row,col,action)
                 if u > max_u:
                     maxAction, max_u = action, u
             policy[row][col] = maxAction
