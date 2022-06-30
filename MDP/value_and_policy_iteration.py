@@ -97,8 +97,9 @@ def policy_evaluation(mdp, policy):
                 actions_list = list(mdp.actions.keys())
                 for item in actions_list:
                     curr_row, curr_col = mdp.step((row, col), item)
-                    matrix[col + (row * columns)][curr_col + (curr_row * columns)] += mdp.transition_function[policy[row][col]][i]
+                    matrix[col + (row * columns)][curr_col + (curr_row * columns)] += mdp.gamma*mdp.transition_function[policy[row][col]][i]
                     i+=1
+
     n_list = []
     for row in range(0,np.array(mdp.board).shape[0]):
         for col in range(0,np.array(mdp.board).shape[1]):
@@ -106,7 +107,7 @@ def policy_evaluation(mdp, policy):
                 n_list.append(float(mdp.board[row][col]))
             else:
                 n_list.append(0.0)
-    inverted = np.linalg.inv(np.subtract(np.identity(len(n_list)), matrix.dot(mdp.gamma))).dot(n_list)
+    inverted = np.linalg.inv(np.subtract(np.identity(len(n_list)),matrix)).dot(n_list)
 
     U = np.zeros((rows, columns))
     for row in range(0,np.array(mdp.board).shape[0]):
